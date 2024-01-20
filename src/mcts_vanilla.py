@@ -23,6 +23,13 @@ def traverse_nodes(node: MCTSNode, board: Board, state, bot_identity: int):
         state: The state associated with that node
 
     """
+
+    total_visits = sum(child.visits for child in node.child_nodes)
+
+    select = max(node.child_nodes, key=lambda expand_node: expand_node.wins / (1 + expand_node.visits)+ sqrt(8 * log(total_visits) / (1 + expand_node.visits)))
+
+    return node.child_nodes[select], state
+
     pass
 
 def expand_leaf(node: MCTSNode, board: Board, state):
@@ -38,6 +45,15 @@ def expand_leaf(node: MCTSNode, board: Board, state):
         state: The state associated with that node
 
     """
+
+    for action in node.untried_actions:
+        if action not in [child.untried_actions for child in node.child_nodes]:
+            new_state = board.next_state(state, action)
+            state = new_state.next_state(state, action)
+            new_action = board.legal_actions(state)
+            node.child_nodes.append(MCTSNode(new_state, parent=node, parent_action=action, action_list=new_action))
+            return new_state, state
+
     pass
 
 
@@ -52,6 +68,12 @@ def rollout(board: Board, state):
         state: The terminal game state
 
     """
+    state_copy = state
+    while not board.is_ended(state_copy):
+        all_action = state_copy.legal_actions()
+        
+
+
     pass
 
 
