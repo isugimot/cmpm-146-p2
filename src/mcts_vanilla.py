@@ -24,13 +24,13 @@ def traverse_nodes(node: MCTSNode, board: Board, state, bot_identity: int):
 
     """
 
-    total_visits = sum(child.visits for child in node.child_nodes)
-
-    select = max(node.child_nodes, key=lambda expand_node: expand_node.wins / (1 + expand_node.visits)+ sqrt(8 * log(total_visits) / (1 + expand_node.visits)))
+    for child in node.child_nodes:
+        opponent = True
+        UCB = ucb(child, opponent)
 
     return node.child_nodes[select], state
+#Not sure how this works like as well with ucb
 
-    pass
 
 def expand_leaf(node: MCTSNode, board: Board, state):
     """ Adds a new leaf to the tree by creating a new child node for the given node (if it is non-terminal).
@@ -96,7 +96,16 @@ def ucb(node: MCTSNode, is_opponent: bool):
     Returns:
         The value of the UCB function for the given node
     """
-    pass
+    total_visits = 0
+    for child in node.child_nodes:
+        total_visits += child.visits
+
+    value = node.wins/node.visits + (log(2) * sqrt(total_visits))/node.visits
+
+    if is_opponent == True:
+        value = -value
+
+    return value
 
 def get_best_action(root_node: MCTSNode):
     """ Selects the best action from the root node in the MCTS tree
