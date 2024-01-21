@@ -24,11 +24,15 @@ def traverse_nodes(node: MCTSNode, board: Board, state, bot_identity: int):
 
     """
 
-    for child in node.child_nodes:
-        opponent = True
-        UCB = ucb(child, opponent)
+    children = []
+    explore_node = None
+    if node.untried_actions:
+        return node, state
+    for child in node.child_nodes.values():
+        children.append({'node' : child, 'val' : ucb(child, bot_identity)})
+    explore_node = max(node['val'] for node in children)
 
-    return node.child_nodes[select], state
+    return traverse_nodes(explore_node, board, state, bot_identity)
 #Not sure how this works like as well with ucb
 
 
@@ -97,13 +101,17 @@ def ucb(node: MCTSNode, is_opponent: bool):
         The value of the UCB function for the given node
     """
     total_visits = 0
-    for child in node.child_nodes:
+    for child in node.child_nodes.values:
         total_visits += child.visits
 
-    value = node.wins/node.visits + (log(2) * sqrt(total_visits))/node.visits
-
+    win = 0
     if is_opponent == True:
-        value = -value
+        win = node.visits - node.wins
+    if is_opponent == False:
+        win = node.wins
+
+    value = win/node.visits + (explore_faction * sqrt(log(total_visits)/node.visits))
+
 
     return value
 
