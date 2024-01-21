@@ -23,7 +23,24 @@ def traverse_nodes(node: MCTSNode, board: Board, state, bot_identity: int):
         state: The state associated with that node
 
     """
-    pass
+    # search fully expanded nodes
+    # descend according to highest UCB score
+    # or until leaf node is reached
+    # return first expandable node found
+
+    children = [] # list of dicts with node and ucb val
+    explore_node = None
+
+    if node.untried_actions: # node is expandable
+        return node, state
+    
+    for child in node.child_nodes.values():
+        children.append({'node' : child, 'val' : ucb(child, bot_identity)})
+
+    explore_node = max(node['val'] for node in children)
+
+    return traverse_nodes(explore_node, board, state, bot_identity)
+    
 
 def expand_leaf(node: MCTSNode, board: Board, state):
     """ Adds a new leaf to the tree by creating a new child node for the given node (if it is non-terminal).
@@ -74,7 +91,16 @@ def ucb(node: MCTSNode, is_opponent: bool):
     Returns:
         The value of the UCB function for the given node
     """
-    pass
+    total_visits = 0
+    for child in node.child_nodes:
+        total_visits += child.visits
+
+    value = node.wins/node.visits + (log(2) * sqrt(total_visits))/node.visits
+
+    if is_opponent == True:
+        value = -value
+
+    return value
 
 def get_best_action(root_node: MCTSNode):
     """ Selects the best action from the root node in the MCTS tree
@@ -112,6 +138,7 @@ def think(board: Board, current_state):
 
         # Do MCTS - This is all you!
         # ...
+        traverse_nodes(node, board, state, bot_identity)
 
     # Return an action, typically the most frequently used action (from the root) or the action with the best
     # estimated win rate.
