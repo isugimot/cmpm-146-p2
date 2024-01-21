@@ -92,10 +92,10 @@ def ucb(node: MCTSNode, is_opponent: bool):
         The value of the UCB function for the given node
     """
     total_visits = 0
-    for child in node.child_nodes:
+    for child in node.child_nodes.values():
         total_visits += child.visits
 
-    value = node.wins/node.visits + (log(2) * sqrt(total_visits))/node.visits
+    value = (1 - node.wins/node.visits) + explore_faction * (sqrt(log(total_visits) / node.visits))
 
     if is_opponent == True:
         value = -value
