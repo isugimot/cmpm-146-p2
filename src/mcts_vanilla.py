@@ -25,12 +25,13 @@ def traverse_nodes(node: MCTSNode, board: Board, state, bot_identity: int):
     """
     children = [] # list of dicts with node and ucb val
     explore_node = None
+    is_opponent = False if board.current_player(state) == bot_identity else True
 
     if node.untried_actions: # node is expandable
         return node, state
     
     for child in node.child_nodes.values():
-        children.append({'node' : child, 'val' : ucb(child, bot_identity)})
+        children.append({'node' : child, 'val' : ucb(child, is_opponent)})
 
     explore_node = max(node['val'] for node in children)
 
@@ -50,12 +51,13 @@ def expand_leaf(node: MCTSNode, board: Board, state):
         state: The state associated with that node
 
     """
-    action = choice(board.legal_actions(state))
-    child = MCTSNode(node, action, [])
-    node.child_nodes.update({action : child}) # pick a random action and add child node
+    action = choice(board.legal_actions(state)) # pick a random action
+    next_state = board.next_state(state, action)
+    child = MCTSNode(node, action, [board.legal_actions(next_state, action)])
+    node.child_nodes.update({action : child}) # add child node
     node.untried_actions.remove(action) # action has been tried, remove from list
 
-    return child, board.next_state(state, action)
+    return child, next_state
 
 
 def rollout(board: Board, state):
@@ -69,7 +71,18 @@ def rollout(board: Board, state):
         state: The terminal game state
 
     """
-    pass
+    me = board.current_player(state)
+    moves = board.legal_actions(state)
+    for move in moves:
+        total_score = 0.0
+        rollout_state = board.next_state(state, move)
+        for i in range(num_nodes):
+            if board.is_ended(rollout_state):
+                    break
+            rollout_move = choice(board.legal_actions(rollout_state))
+            rollout_state = board.next_state(state, move)
+
+    return state
 
 
 def backpropagate(node: MCTSNode|None, won: bool):
@@ -94,8 +107,8 @@ def ucb(node: MCTSNode, is_opponent: bool):
     total_visits = 0
     for child in node.child_nodes.values():
         total_visits += child.visits
-
-    value = (1 - node.wins/node.visits) + explore_faction * sqrt(log(total_visits) / node.visits)
+    winrate = (1 - node.wins/node.visits) if is_opponent else node.wins/node.visits
+    value = winrate + explore_faction * sqrt(log(total_visits) / node.visits)
 
     return value
 
