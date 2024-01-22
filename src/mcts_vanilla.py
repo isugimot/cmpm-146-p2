@@ -77,12 +77,13 @@ def rollout(board: Board, state):
         best_expectation = float('-inf')
         for move in moves:
             total_score = 0.0
-            rollout_state = board.next_state(state, move)
-            for i in range(num_nodes):
-                if board.is_ended(rollout_state):
-                    break
-                rollout_move = choice(board.legal_actions(rollout_state))
-                rollout_state = board.next_state(rollout_state, rollout_move)
+            for r in range(ROLLOUTS):
+                rollout_state = board.next_state(state, move)
+                for i in range(num_nodes):
+                    if board.is_ended(rollout_state):
+                        break
+                    rollout_move = choice(board.legal_actions(rollout_state))
+                    rollout_state = board.next_state(rollout_state, rollout_move)
 
             g_point = board.points_values(rollout_state)
             o_boxes = board.owned_boxes(rollout_state)
