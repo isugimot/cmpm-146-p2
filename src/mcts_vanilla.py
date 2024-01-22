@@ -104,7 +104,7 @@ def rollout(board: Board, state):
             best_move = move
 
         board.next_state(state, best_move)
-#What is the ROLLOUT suppossed to be?
+#What is the ROLLOUTS suppossed to be?
     return state
 
 
@@ -117,7 +117,12 @@ def backpropagate(node: MCTSNode|None, won: bool):
 
     """
 
-    pass
+    while node:
+        node.wins += won
+        node.visits += 1
+        node = node.parent
+
+    #pass
 
 def ucb(node: MCTSNode, is_opponent: bool):
     """ Calcualtes the UCB value for the given node from the perspective of the bot
