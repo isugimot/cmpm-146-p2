@@ -102,6 +102,9 @@ def rollout(board: Board, state, identity_of_bot: int):
         rollout_state = board.next_state(rollout_state, rand_move)
     return rollout_state
 
+#Making terminal access easier cd C:\Users\ichis\OneDrive\Desktop\CMPM-146\cmpm-146-p2\src
+#python p2_sim.py mcts_modified rollout_bot
+
     """rollout_state = state
     while not board.is_ended(rollout_state):
         me = board.current_player(rollout_state)
