@@ -82,41 +82,61 @@ def rollout(board: Board, state):
         
     return rollout_state"""
 
-    me = board.current_player(state)
-    moves = board.legal_actions(state)
-    best_move = moves[0]
-    best_expectation = float('-inf')
-    for move in moves:
-        total_score = 0.0
-        for r in range(10):
-            rollout_state = board.next_state(state, move)
-            for i in range(num_nodes):
-                if board.is_ended(rollout_state):
-                    break
-                rollout_move = choice(board.legal_actions(rollout_state))
+    rollout_state = state
+    while not board.is_ended(rollout_state):
+        better_action = False
+        rollout_moves = board.legal_actions(rollout_state)
+        for rollout_move in rollout_moves:
+            if rollout_move[2] == 1 and rollout_move[3] == 1:
                 rollout_state = board.next_state(rollout_state, rollout_move)
-
-        g_point = board.points_values(rollout_state)
-        o_boxes = board.owned_boxes(rollout_state)
-        if g_point is not None:
-            r_score = g_point[1]*9
-            b_score = g_point[2]*9
-        else:
-            r_score = len([v for v in o_boxes.values() if v == 1])
-            b_score = len([v for v in o_boxes.values() if v == 2])
-
-        outcome = r_score - b_score if me == 1 else b_score - r_score
-        total_score += outcome
-
-    expectaion = float(total_score)/10
-
-    if expectaion > best_expectation:
-        best_expectation = expectaion
-        best_move = move
-
-    board.next_state(state, best_move)
+                better_action = True
+        
+        if better_action == False:
+            rollout_state = board.next_state(rollout_state, choice(rollout_moves))
 
     return rollout_state
+
+    """rollout_state = state
+    while not board.is_ended(rollout_state):
+        me = board.current_player(rollout_state)
+
+        moves = board.legal_actions(rollout_state)
+
+        best_move = moves[0]
+        best_expectation = float('-inf')
+
+        for move in moves:
+            total_score = 0.0
+
+            for r in range(10):
+                rollout_state = board.next_state(rollout_state, move)
+                while True:
+                    if board.is_ended(rollout_state):
+                        break
+                    rollout_move = choice(board.legal_actions(rollout_state))
+                    rollout_state = board.next_state(rollout_state, rollout_move)
+
+                g_point = board.points_values(rollout_state)
+                o_boxes = board.owned_boxes(rollout_state)
+                if g_point is not None:
+                    r_score = g_point[1]*9
+                    b_score = g_point[2]*9
+                else:
+                    r_score = len([v for v in o_boxes.values() if v == 1])
+                    b_score = len([v for v in o_boxes.values() if v == 2])
+
+                outcome = r_score - b_score if me == 1 else b_score - r_score
+                total_score += outcome
+
+            expectaion = float(total_score)/10
+
+        if expectaion > best_expectation:
+            best_expectation = expectaion
+            best_move = move
+
+        board.next_state(rollout_state, best_move)
+
+    return rollout_state"""
 
 
 def backpropagate(node: MCTSNode|None, won: bool):
