@@ -73,13 +73,49 @@ def rollout(board: Board, state):
         state: The terminal game state
 
     """
-    rollout_state = state
+    """rollout_state = state
     for i in range(num_nodes):
         if board.is_ended(rollout_state):
             break
         rollout_move = choice(board.legal_actions(rollout_state))
         rollout_state = board.next_state(rollout_state, rollout_move)
         
+    return rollout_state"""
+
+    me = board.current_player(state)
+    moves = board.legal_actions(state)
+    best_move = moves[0]
+    best_expectation = float('-inf')
+    for move in moves:
+        total_score = 0.0
+        for r in range(10):
+            rollout_state = board.next_state(state, move)
+            for i in range(num_nodes):
+                if board.is_ended(rollout_state):
+                    break
+                rollout_move = choice(board.legal_actions(rollout_state))
+                rollout_state = board.next_state(rollout_state, rollout_move)
+
+        g_point = board.points_values(rollout_state)
+        o_boxes = board.owned_boxes(rollout_state)
+        if g_point is not None:
+            r_score = g_point[1]*9
+            b_score = g_point[2]*9
+        else:
+            r_score = len([v for v in o_boxes.values() if v == 1])
+            b_score = len([v for v in o_boxes.values() if v == 2])
+
+        outcome = r_score - b_score if me == 1 else b_score - r_score
+        total_score += outcome
+
+    expectaion = float(total_score)/10
+
+    if expectaion > best_expectation:
+        best_expectation = expectaion
+        best_move = move
+
+    board.next_state(state, best_move)
+
     return rollout_state
 
 
