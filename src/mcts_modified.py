@@ -83,18 +83,18 @@ def rollout(board: Board, state):
     return rollout_state"""
 
     rollout_state = state
-    while not board.is_ended(rollout_state):
-        better_action = False
-        rollout_moves = board.legal_actions(rollout_state)
-        for rollout_move in rollout_moves:
-            if rollout_move[2] == 1 and rollout_move[3] == 1:
-                rollout_state = board.next_state(rollout_state, rollout_move)
-                better_action = True
-        
-        if better_action == False:
-            rollout_state = board.next_state(rollout_state, choice(rollout_moves))
+    rollout_moves = board.legal_actions(rollout_state)
+    state_keep = []
 
-    return rollout_state
+    for rollout_move in rollout_moves:
+        rollout_state = board.next_state(rollout_state, rollout_move)
+        while not board.is_ended(rollout_state):
+            rand_move = choice(board.legal_actions(rollout_state))
+            rollout_state = board.next_state(rollout_state, rand_move)
+        state_keep.append(rollout_state)
+        rollout_state = state
+
+    return state_keep
 
     """rollout_state = state
     while not board.is_ended(rollout_state):
