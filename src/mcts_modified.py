@@ -4,7 +4,7 @@ from p2_t3 import Board
 from random import choice
 from math import sqrt, log
 
-num_nodes = 100
+num_nodes = 1000
 explore_faction = 2.
 
 def traverse_nodes(node: MCTSNode, board: Board, state, bot_identity: int):
@@ -23,7 +23,20 @@ def traverse_nodes(node: MCTSNode, board: Board, state, bot_identity: int):
         state: The state associated with that node
 
     """
-    pass
+    children = {} # key is child, val is ucb val
+    is_opponent = False if board.current_player(state) == bot_identity else True
+    
+    while not node.untried_actions: # haven't found expandable node
+        for child in node.child_nodes.values():
+            children.update({child : ucb(child, is_opponent)})
+        if not children:
+            break
+        node = max(children, key = children.get)
+        state = board.next_state(state, node.parent_action)
+        children.clear()
+
+    return node, state
+    
 
 def expand_leaf(node: MCTSNode, board: Board, state):
     """ Adds a new leaf to the tree by creating a new child node for the given node (if it is non-terminal).
@@ -38,7 +51,15 @@ def expand_leaf(node: MCTSNode, board: Board, state):
         state: The state associated with that node
 
     """
-    pass
+    if node.untried_actions:
+        action = choice(node.untried_actions) # pick a random action
+        node.untried_actions.remove(action) # remove action from untried list
+        state = board.next_state(state, action) # update state
+        child = MCTSNode(node, action, board.legal_actions(state))
+        node.child_nodes.update({action : child}) # add child node
+        node = child
+
+    return node, state
 
 
 def rollout(board: Board, state):
@@ -52,7 +73,14 @@ def rollout(board: Board, state):
         state: The terminal game state
 
     """
-    pass
+    rollout_state = state
+    for i in range(num_nodes):
+        if board.is_ended(rollout_state):
+            break
+        rollout_move = choice(board.legal_actions(rollout_state))
+        rollout_state = board.next_state(rollout_state, rollout_move)
+        
+    return rollout_state
 
 
 def backpropagate(node: MCTSNode|None, won: bool):
@@ -63,7 +91,11 @@ def backpropagate(node: MCTSNode|None, won: bool):
         won:    An indicator of whether the bot won or lost the game.
 
     """
-    pass
+    while node:
+        node.visits += 1
+        node.wins += 1 if won else 0
+        node = node.parent
+
 
 def ucb(node: MCTSNode, is_opponent: bool):
     """ Calcualtes the UCB value for the given node from the perspective of the bot
@@ -74,7 +106,14 @@ def ucb(node: MCTSNode, is_opponent: bool):
     Returns:
         The value of the UCB function for the given node
     """
-    pass
+    value = 0
+    total_visits = node.parent.visits
+
+    if node.visits != 0:
+        winrate = (1 - node.wins/node.visits) if is_opponent else node.wins/node.visits
+        value = winrate + explore_faction * sqrt(log(total_visits) / node.visits)
+
+    return value
 
 def get_best_action(root_node: MCTSNode):
     """ Selects the best action from the root node in the MCTS tree
@@ -85,7 +124,18 @@ def get_best_action(root_node: MCTSNode):
         action: The best action from the root node
     
     """
-    pass
+    winrate = 0
+    if root_node.child_nodes:
+        for child in root_node.child_nodes.values():
+            if child.visits != 0:
+                if child.wins/child.visits >= winrate:
+                    winrate = child.wins/child.visits
+                    action = child.parent_action
+    else:
+        action = root_node.parent_action
+
+    return action
+
 
 def is_win(board: Board, state, identity_of_bot: int):
     # checks if state is a win state for identity_of_bot
@@ -111,7 +161,11 @@ def think(board: Board, current_state):
         node = root_node
 
         # Do MCTS - This is all you!
-        # ...
+        node, state = traverse_nodes(node, board, state, bot_identity)
+        node, state = expand_leaf(node, board, state)
+        state = rollout(board, state)
+        backpropagate(node, is_win(board, state, bot_identity))
+
 
     # Return an action, typically the most frequently used action (from the root) or the action with the best
     # estimated win rate.
