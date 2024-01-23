@@ -62,7 +62,7 @@ def expand_leaf(node: MCTSNode, board: Board, state):
     return node, state
 
 
-def rollout(board: Board, state):
+def rollout(board: Board, state, identity_of_bot: int):
     """ Given the state of the game, the rollout plays out the remainder randomly.
 
     Args:
@@ -84,17 +84,23 @@ def rollout(board: Board, state):
 
     rollout_state = state
     rollout_moves = board.legal_actions(rollout_state)
-    state_keep = []
 
     for rollout_move in rollout_moves:
         rollout_state = board.next_state(rollout_state, rollout_move)
         while not board.is_ended(rollout_state):
             rand_move = choice(board.legal_actions(rollout_state))
             rollout_state = board.next_state(rollout_state, rand_move)
-        state_keep.append(rollout_state)
-        rollout_state = state
+        outcome = board.points_values(rollout_state)
+        if outcome[identity_of_bot] != 1:
+            rollout_state = state
+        else:
+            return rollout_state
 
-    return state_keep
+
+    while not board.is_ended(rollout_state):
+        rand_move = choice(board.legal_actions(rollout_state))
+        rollout_state = board.next_state(rollout_state, rand_move)
+    return rollout_state
 
     """rollout_state = state
     while not board.is_ended(rollout_state):
@@ -219,7 +225,7 @@ def think(board: Board, current_state):
         # Do MCTS - This is all you!
         node, state = traverse_nodes(node, board, state, bot_identity)
         node, state = expand_leaf(node, board, state)
-        state = rollout(board, state)
+        state = rollout(board, state, bot_identity)
         backpropagate(node, is_win(board, state, bot_identity))
 
 
