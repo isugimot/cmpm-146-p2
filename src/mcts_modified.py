@@ -82,7 +82,7 @@ def rollout(board: Board, state, identity_of_bot: int):
         
     return rollout_state"""
 
-    rollout_state = state
+    """rollout_state = state
     rollout_moves = board.legal_actions(rollout_state)
 
     for rollout_move in rollout_moves:
@@ -100,6 +100,15 @@ def rollout(board: Board, state, identity_of_bot: int):
     while not board.is_ended(rollout_state):
         rand_move = choice(board.legal_actions(rollout_state))
         rollout_state = board.next_state(rollout_state, rand_move)
+    return rollout_state"""
+    
+    rollout_state = state
+    for i in range(50):
+        while not board.is_ended(rollout_state):
+            rollout_move = choice(board.legal_actions(rollout_state))
+            rollout_state = board.next_state(rollout_state, rollout_move)
+        if is_win(board, rollout_state, identity_of_bot):
+            return rollout_state
     return rollout_state
 
 #Making terminal access easier cd C:\Users\ichis\OneDrive\Desktop\CMPM-146\cmpm-146-p2\src
