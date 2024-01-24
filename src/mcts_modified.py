@@ -4,7 +4,7 @@ from p2_t3 import Board
 from random import choice
 from math import sqrt, log
 
-num_nodes = 1000
+num_nodes = 100
 explore_faction = 2.
 
 def traverse_nodes(node: MCTSNode, board: Board, state, bot_identity: int):
@@ -111,7 +111,7 @@ def rollout(board: Board, state, identity_of_bot: int):
             return rollout_state
     return rollout_state"""
 
-    rollout_state1 = state
+    """rollout_state1 = state
     rollout_state2 = state
     priority_point1 = 0
     priority_point2 = 0
@@ -156,7 +156,47 @@ def rollout(board: Board, state, identity_of_bot: int):
 
     if priority_point1 > priority_point2:
         return rollout_state1
-    return rollout_state2
+    return rollout_state2"""
+
+    rollout_state = state
+    opponent_bot = 1
+    if identity_of_bot == 1:
+        opponent_bot = 2 
+    owned_boxes = {}
+    while not board.is_ended(rollout_state):
+        priority_point1 = 0
+        keep_point = 0
+        best_check = False
+        for i in range(50): # search all actions to see if a winning move exists
+            move = choice(board.legal_actions(rollout_state))
+            rollout_move = move
+            move_x, move_y = move[0], move[1]
+            test_state = board.next_state(rollout_state, rollout_move)
+            owned_boxes = board.owned_boxes(test_state)
+
+            if owned_boxes[(move_x, move_y)] == identity_of_bot: # winning move
+                priority_point1 += 5
+                if move_x and move_y == 1:
+                    priority_point1 += 10
+                if move_x == 0 or move_x == 2:
+                    if move_y == 0 or move_y == 2:
+                        priority_point1 += 3
+            if owned_boxes[(move_x, move_y)] == opponent_bot: # winning move
+                priority_point1 -= 5
+                if move_x and move_y == 1:
+                    priority_point1 -= 10
+                if move_x == 0 or move_x == 2:
+                    if move_y == 0 or move_y == 2:
+                        priority_point1 -= 3
+                
+            if keep_point > priority_point1:
+                best_move = rollout_move
+                best_check = True
+                keep_point = priority_point1
+        if best_check == False:
+            best_move = rollout_move    
+        rollout_state = board.next_state(rollout_state, best_move)
+    return rollout_state
 
 #Making terminal access easier cd C:\Users\ichis\OneDrive\Desktop\CMPM-146\cmpm-146-p2\src
 #python p2_sim.py mcts_modified rollout_bot
