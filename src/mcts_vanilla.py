@@ -4,7 +4,7 @@ from p2_t3 import Board
 from random import choice
 from math import sqrt, log
 
-num_nodes = 1000
+num_nodes = 100
 explore_faction = 2.
 
 def traverse_nodes(node: MCTSNode, board: Board, state, bot_identity: int):
@@ -36,7 +36,6 @@ def traverse_nodes(node: MCTSNode, board: Board, state, bot_identity: int):
         children.clear()
 
     return node, state
-    
 
 def expand_leaf(node: MCTSNode, board: Board, state):
     """ Adds a new leaf to the tree by creating a new child node for the given node (if it is non-terminal).
@@ -61,7 +60,6 @@ def expand_leaf(node: MCTSNode, board: Board, state):
 
     return node, state
 
-
 def rollout(board: Board, state):
     """ Given the state of the game, the rollout plays out the remainder randomly.
 
@@ -74,14 +72,11 @@ def rollout(board: Board, state):
 
     """
     rollout_state = state
-    for i in range(num_nodes):
-        if board.is_ended(rollout_state):
-            break
+    while not board.is_ended(rollout_state):
         rollout_move = choice(board.legal_actions(rollout_state))
         rollout_state = board.next_state(rollout_state, rollout_move)
         
     return rollout_state
-
 
 def backpropagate(node: MCTSNode|None, won: bool):
     """ Navigates the tree from a leaf node to the root, updating the win and visit count of each node along the path.
@@ -95,7 +90,6 @@ def backpropagate(node: MCTSNode|None, won: bool):
         node.visits += 1
         node.wins += 1 if won else 0
         node = node.parent
-
 
 def ucb(node: MCTSNode, is_opponent: bool):
     """ Calcualtes the UCB value for the given node from the perspective of the bot
@@ -135,7 +129,6 @@ def get_best_action(root_node: MCTSNode):
         action = root_node.parent_action
 
     return action
-
 
 def is_win(board: Board, state, identity_of_bot: int):
     # checks if state is a win state for identity_of_bot
