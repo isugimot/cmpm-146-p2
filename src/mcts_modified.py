@@ -102,14 +102,61 @@ def rollout(board: Board, state, identity_of_bot: int):
         rollout_state = board.next_state(rollout_state, rand_move)
     return rollout_state"""
     
-    rollout_state = state
+    """rollout_state = state
     for i in range(50):
         while not board.is_ended(rollout_state):
             rollout_move = choice(board.legal_actions(rollout_state))
             rollout_state = board.next_state(rollout_state, rollout_move)
         if is_win(board, rollout_state, identity_of_bot):
             return rollout_state
-    return rollout_state
+    return rollout_state"""
+
+    rollout_state1 = state
+    rollout_state2 = state
+    priority_point1 = 0
+    priority_point2 = 0
+    owned_boxes = {}
+    while not board.is_ended(rollout_state1):
+        rollout_move = choice(board.legal_actions(rollout_state1))
+        rollout_state1 = board.next_state(rollout_state1, rollout_move)
+
+    owned_boxes = board.owned_boxes(rollout_state1)
+    for box in owned_boxes:
+        if box == identity_of_bot:
+            priority_point1 += 5
+    if owned_boxes[1, 1] == identity_of_bot: # winning move
+        priority_point1 += 10
+    if owned_boxes[0, 0] == identity_of_bot:
+        priority_point1 += 3
+    if owned_boxes[0, 2] == identity_of_bot:
+        priority_point1 += 3
+    if owned_boxes[2, 0] == identity_of_bot:
+        priority_point1 += 3
+    if owned_boxes[2, 2] == identity_of_bot:
+        priority_point1 += 3
+
+    while not board.is_ended(rollout_state2):
+        rollout_move = choice(board.legal_actions(rollout_state2))
+        rollout_state2 = board.next_state(rollout_state2, rollout_move)
+
+    owned_boxes = board.owned_boxes(rollout_state2)
+    for box in owned_boxes:
+        if box == identity_of_bot:
+            priority_point2 += 5
+    if owned_boxes[1, 1] == identity_of_bot: # winning move
+        priority_point2 += 10
+    if owned_boxes[0, 0] == identity_of_bot:
+        priority_point2 += 3
+    if owned_boxes[0, 2] == identity_of_bot:
+        priority_point2 += 3
+    if owned_boxes[2, 0] == identity_of_bot:
+        priority_point2 += 3
+    if owned_boxes[2, 2] == identity_of_bot:
+        priority_point2 += 3
+
+    if priority_point1 > priority_point2:
+        return rollout_state1
+    return rollout_state2
 
 #Making terminal access easier cd C:\Users\ichis\OneDrive\Desktop\CMPM-146\cmpm-146-p2\src
 #python p2_sim.py mcts_modified rollout_bot
