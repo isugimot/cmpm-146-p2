@@ -73,91 +73,6 @@ def rollout(board: Board, state, identity_of_bot: int):
         state: The terminal game state
 
     """
-    """rollout_state = state
-    for i in range(num_nodes):
-        if board.is_ended(rollout_state):
-            break
-        rollout_move = choice(board.legal_actions(rollout_state))
-        rollout_state = board.next_state(rollout_state, rollout_move)
-        
-    return rollout_state"""
-
-    """rollout_state = state
-    rollout_moves = board.legal_actions(rollout_state)
-
-    for rollout_move in rollout_moves:
-        rollout_state = board.next_state(rollout_state, rollout_move)
-        while not board.is_ended(rollout_state):
-            rand_move = choice(board.legal_actions(rollout_state))
-            rollout_state = board.next_state(rollout_state, rand_move)
-        outcome = board.points_values(rollout_state)
-        if outcome[identity_of_bot] != 1:
-            rollout_state = state
-        else:
-            return rollout_state
-
-
-    while not board.is_ended(rollout_state):
-        rand_move = choice(board.legal_actions(rollout_state))
-        rollout_state = board.next_state(rollout_state, rand_move)
-    return rollout_state"""
-    
-    """rollout_state = state
-    for i in range(50):
-        while not board.is_ended(rollout_state):
-            rollout_move = choice(board.legal_actions(rollout_state))
-            rollout_state = board.next_state(rollout_state, rollout_move)
-        if is_win(board, rollout_state, identity_of_bot):
-            return rollout_state
-    return rollout_state"""
-
-    """rollout_state1 = state
-    rollout_state2 = state
-    priority_point1 = 0
-    priority_point2 = 0
-    owned_boxes = {}
-    while not board.is_ended(rollout_state1):
-        rollout_move = choice(board.legal_actions(rollout_state1))
-        rollout_state1 = board.next_state(rollout_state1, rollout_move)
-
-    owned_boxes = board.owned_boxes(rollout_state1)
-    for box in owned_boxes:
-        if box == identity_of_bot:
-            priority_point1 += 5
-    if owned_boxes[1, 1] == identity_of_bot: # winning move
-        priority_point1 += 10
-    if owned_boxes[0, 0] == identity_of_bot:
-        priority_point1 += 3
-    if owned_boxes[0, 2] == identity_of_bot:
-        priority_point1 += 3
-    if owned_boxes[2, 0] == identity_of_bot:
-        priority_point1 += 3
-    if owned_boxes[2, 2] == identity_of_bot:
-        priority_point1 += 3
-
-    while not board.is_ended(rollout_state2):
-        rollout_move = choice(board.legal_actions(rollout_state2))
-        rollout_state2 = board.next_state(rollout_state2, rollout_move)
-
-    owned_boxes = board.owned_boxes(rollout_state2)
-    for box in owned_boxes:
-        if box == identity_of_bot:
-            priority_point2 += 5
-    if owned_boxes[1, 1] == identity_of_bot: # winning move
-        priority_point2 += 10
-    if owned_boxes[0, 0] == identity_of_bot:
-        priority_point2 += 3
-    if owned_boxes[0, 2] == identity_of_bot:
-        priority_point2 += 3
-    if owned_boxes[2, 0] == identity_of_bot:
-        priority_point2 += 3
-    if owned_boxes[2, 2] == identity_of_bot:
-        priority_point2 += 3
-
-    if priority_point1 > priority_point2:
-        return rollout_state1
-    return rollout_state2"""
-
     rollout_state = state
     opponent_bot = 1
     if identity_of_bot == 1:
@@ -167,21 +82,21 @@ def rollout(board: Board, state, identity_of_bot: int):
         priority_point1 = 0
         keep_point = 0
         best_check = False
-        for i in range(5): # search all actions to see if a winning move exists
+        for i in range(5):
             move = choice(board.legal_actions(rollout_state))
             rollout_move = move
             move_x, move_y = move[0], move[1]
             test_state = board.next_state(rollout_state, rollout_move)
             owned_boxes = board.owned_boxes(test_state)
 
-            if owned_boxes[(move_x, move_y)] == identity_of_bot: # winning move
+            if owned_boxes[(move_x, move_y)] == identity_of_bot:
                 priority_point1 += 5
                 if move_x and move_y == 1:
                     priority_point1 += 10
                 if move_x == 0 or move_x == 2:
                     if move_y == 0 or move_y == 2:
                         priority_point1 += 3
-            if owned_boxes[(move_x, move_y)] == opponent_bot: # winning move
+            if owned_boxes[(move_x, move_y)] == opponent_bot:
                 priority_point1 -= 5
                 if move_x and move_y == 1:
                     priority_point1 -= 10
@@ -197,52 +112,6 @@ def rollout(board: Board, state, identity_of_bot: int):
             best_move = rollout_move    
         rollout_state = board.next_state(rollout_state, best_move)
     return rollout_state
-
-#Making terminal access easier 
-# cd C:\Users\ichis\OneDrive\Desktop\CMPM-146\cmpm-146-p2\src
-# python p2_sim.py mcts_modified mcts_vanilla
-
-    """rollout_state = state
-    while not board.is_ended(rollout_state):
-        me = board.current_player(rollout_state)
-
-        moves = board.legal_actions(rollout_state)
-
-        best_move = moves[0]
-        best_expectation = float('-inf')
-
-        for move in moves:
-            total_score = 0.0
-
-            for r in range(10):
-                rollout_state = board.next_state(rollout_state, move)
-                while True:
-                    if board.is_ended(rollout_state):
-                        break
-                    rollout_move = choice(board.legal_actions(rollout_state))
-                    rollout_state = board.next_state(rollout_state, rollout_move)
-
-                g_point = board.points_values(rollout_state)
-                o_boxes = board.owned_boxes(rollout_state)
-                if g_point is not None:
-                    r_score = g_point[1]*9
-                    b_score = g_point[2]*9
-                else:
-                    r_score = len([v for v in o_boxes.values() if v == 1])
-                    b_score = len([v for v in o_boxes.values() if v == 2])
-
-                outcome = r_score - b_score if me == 1 else b_score - r_score
-                total_score += outcome
-
-            expectaion = float(total_score)/10
-
-        if expectaion > best_expectation:
-            best_expectation = expectaion
-            best_move = move
-
-        board.next_state(rollout_state, best_move)
-
-    return rollout_state"""
 
 
 def backpropagate(node: MCTSNode|None, won: bool):
