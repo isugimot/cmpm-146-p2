@@ -167,7 +167,7 @@ def rollout(board: Board, state, identity_of_bot: int):
         priority_point1 = 0
         keep_point = 0
         best_check = False
-        for i in range(50): # search all actions to see if a winning move exists
+        for i in range(5): # search all actions to see if a winning move exists
             move = choice(board.legal_actions(rollout_state))
             rollout_move = move
             move_x, move_y = move[0], move[1]
@@ -198,8 +198,9 @@ def rollout(board: Board, state, identity_of_bot: int):
         rollout_state = board.next_state(rollout_state, best_move)
     return rollout_state
 
-#Making terminal access easier cd C:\Users\ichis\OneDrive\Desktop\CMPM-146\cmpm-146-p2\src
-#python p2_sim.py mcts_modified rollout_bot
+#Making terminal access easier 
+# cd C:\Users\ichis\OneDrive\Desktop\CMPM-146\cmpm-146-p2\src
+# python p2_sim.py mcts_modified mcts_vanilla
 
     """rollout_state = state
     while not board.is_ended(rollout_state):
