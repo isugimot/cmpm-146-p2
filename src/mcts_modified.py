@@ -72,51 +72,45 @@ def rollout(board: Board, state, bot_identity: int):
         state: The terminal game state
 
     """
-    
     rollout_state = state
+    opponent_bot = 1
+    if bot_identity == 1:
+        opponent_bot = 2 
     owned_boxes = {}
     while not board.is_ended(rollout_state):
-        if board.current_player(rollout_state) == bot_identity: # making player's move
-            for move in board.legal_actions(rollout_state): # search all actions to see if a winning move exists
-                rollout_move = move
-                move_x, move_y = move[0], move[1]
-                test_state = board.next_state(rollout_state, rollout_move)
-                owned_boxes = board.owned_boxes(test_state)
-                if owned_boxes[(move_x, move_y)] == bot_identity: # winning move
-                    break
-        else:
-            rollout_move = choice(board.legal_actions(rollout_state))
-        rollout_state = board.next_state(rollout_state, rollout_move)
-
-    return rollout_state
-    
-    """
-    current_state = state
-    previous_state = state
-    next_state = state
-    owned_boxes = {}
-    while not board.is_ended(current_state):
-        for move in board.legal_actions(current_state): # search all actions to see if a winning move exists
+        priority_point1 = 0
+        keep_point = 0
+        best_check = False
+        for i in range(5): # search all actions to see if a winning move exists
+            move = choice(board.legal_actions(rollout_state))
             rollout_move = move
             move_x, move_y = move[0], move[1]
-            next_state = board.next_state(current_state, rollout_move)
-            owned_boxes = board.owned_boxes(next_state)
-            if board.current_player(next_state) == bot_identity:
-                print("is player")
-                if owned_boxes[(move_x, move_y)] == bot_identity: # win for player
-                    break
-            else:
-                print("is opponent")
-            #else: # opponent's turn
-                #if owned_boxes[(move_x, move_y)] == board.current_player(current_state): # win for opponent
-                    #current_state = previous_state
-                    #rollout_move = choice(board.legal_actions(current_state))
-                    #next_state = board.next_state()
-        #previous_state = current_state
-        current_state = board.next_state(current_state, rollout_move)
+            test_state = board.next_state(rollout_state, rollout_move)
+            owned_boxes = board.owned_boxes(test_state)
 
-        return current_state
-        """
+            if owned_boxes[(move_x, move_y)] == bot_identity: # winning move
+                priority_point1 += 5
+                if move_x and move_y == 1:
+                    priority_point1 += 10
+                if move_x == 0 or move_x == 2:
+                    if move_y == 0 or move_y == 2:
+                        priority_point1 += 3
+            if owned_boxes[(move_x, move_y)] == opponent_bot: # winning move
+                priority_point1 -= 5
+                if move_x and move_y == 1:
+                    priority_point1 -= 10
+                if move_x == 0 or move_x == 2:
+                    if move_y == 0 or move_y == 2:
+                        priority_point1 -= 3
+                
+            if keep_point > priority_point1:
+                best_move = rollout_move
+                best_check = True
+                keep_point = priority_point1
+        if best_check == False:
+            best_move = rollout_move    
+        rollout_state = board.next_state(rollout_state, best_move)
+    return rollout_state
 
 
 def backpropagate(node: MCTSNode|None, won: bool):
